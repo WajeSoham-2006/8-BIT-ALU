@@ -1,0 +1,84 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use IEEE.NUMERIC_STD.all;
+
+
+entity alu is
+port ( a,b : in std_logic_vector(7 downto 0);
+      s : in std_logic_vector(3 downto 0); --operator selector
+      y : out std_logic_vector(7 downto 0); --output
+      c,flag : out std_logic );
+      
+      end alu;
+  
+architecture alu_arch of alu is
+
+begin
+
+  process(a, b, s)
+        variable temp   : unsigned(8 downto 0);
+        variable result : unsigned(7 downto 0);
+        variable carry  : std_logic;
+    begin
+    temp :=(others=>'0');
+    result :=(others=>'0');
+    carry :='0';
+      
+    case s is
+    
+    --addition
+    when "0000" => temp :=('0' & unsigned(a)) + ('0' & unsigned(b));
+    result := temp(7 downto 0);
+    carry:= temp(8);
+    
+    --subtraction
+    when "0001" => result:= unsigned(a) -  unsigned(b);
+    if unsigned(a) < unsigned(b)
+    then carry :='1';
+    else
+    carry :='0';
+    end if;
+    
+    --or
+    when "0010" => result := unsigned((a) or b);
+    
+    --and
+    when "0011" => result := unsigned((a) and (b));
+    
+    --xor
+    when "0100" => result := unsigned((a) xor (b));
+    
+    --not a
+    when "0101" => result := unsigned(not (a));
+    
+    --not b
+    when "0110" => result := unsigned(not(b));
+    
+    -- Left shift
+    when "0111" => result := shift_left(unsigned(a), 1);
+     
+     -- Right shift
+    when "1000" => result := shift_right(unsigned(a), 1);
+
+    when others => result := (others => '0');    
+    
+    end case;
+
+        -- Connect internal results to outputs
+        y <= std_logic_vector(result);
+        c <= carry;
+
+        -- Zero flag
+        if result = to_unsigned(0, 8) then
+            flag <= '1';
+        else
+            flag <= '0';
+        end if;
+
+    end process;
+
+end alu_arch;
+
+  
+      
+      
